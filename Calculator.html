@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        /* Center the calculator on the page */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 150vh;
+            margin: 1;
+            font-family: Arial, sans-serif;
+            background-color: #bac8d4;
+        }
+        
+        /* Calculator container styling */
+        .calculator {
+            width: 200px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Display section for output */
+        .display {
+            grid-column: span 4;
+            padding: 10px;
+            font-size: 1.5em;
+            background-color: #e6e6e6;
+            text-align: right;
+            border-radius: 5px;
+        }
+
+        /* Button styling */
+        .button {
+            padding: 15px;
+            font-size: 1em;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+        }
+
+        /* Styling specific buttons */
+        .button.number {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .button.operator {
+            background-color: #f39c12;
+            color: #e1e787;
+        }
+
+        .button.clear {
+            background-color: #e74c3c;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <!-- Display -->
+        <div class="display" id="display">0</div>
+
+        <!-- Number Buttons -->
+        <button class="button number">7</button>
+        <button class="button number">8</button>
+        <button class="button number">9</button>
+        <button class="button operator">/</button>
+
+        <button class="button number">4</button>
+        <button class="button number">5</button>
+        <button class="button number">6</button>
+        <button class="button operator">*</button>
+
+        <button class="button number">1</button>
+        <button class="button number">2</button>
+        <button class="button number">3</button>
+        <button class="button operator">-</button>
+
+        <button class="button clear">C</button>
+        <button class="button number">0</button>
+        <button class="button operator">=</button>
+        <button class="button operator">+</button>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+        let currentInput = '0';
+        let firstOperand = null;
+        let operator = null;
+        let waitingForSecondOperand = false;
+
+        // Function to update the display
+        function updateDisplay() {
+            display.textContent = currentInput;
+        }
+
+        // Handle number input
+        function handleNumber(num) {
+            if (waitingForSecondOperand) {
+                currentInput = num;
+                waitingForSecondOperand = false;
+            } else {
+                currentInput = currentInput === '0' ? num : currentInput + num;
+            }
+            updateDisplay();
+        }
+
+        // Handle operator input
+        function handleOperator(nextOperator) {
+            const inputValue = parseFloat(currentInput);
+
+            if (operator && waitingForSecondOperand) {
+                operator = nextOperator;
+                return;
+            }
+
+            if (firstOperand === null && !isNaN(inputValue)) {
+                firstOperand = inputValue;
+            } else if (operator) {
+                const result = calculate(firstOperand, inputValue, operator);
+                currentInput = `${parseFloat(result.toFixed(7))}`;
+                firstOperand = result;
+                updateDisplay();
+            }
+
+            operator = nextOperator;
+            waitingForSecondOperand = true;
+        }
+
+        // Calculation logic
+        function calculate(first, second, operator) {
+            switch (operator) {
+                case '+':
+                    return first + second;
+                case '-':
+                    return first - second;
+                case '*':
+                    return first * second;
+                case '/':
+                    return second !== 0 ? first / second : 'Error';
+                default:
+                    return second;
+            }
+        }
+
+        // Handle clear input
+        function clear() {
+            currentInput = '0';
+            firstOperand = null;
+            operator = null;
+            waitingForSecondOperand = false;
+            updateDisplay();
+        }
+
+        // Attach event listeners
+        document.querySelectorAll('.button').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const { textContent } = event.target;
+
+                if (!isNaN(textContent)) {
+                    handleNumber(textContent);
+                } else if (['+', '-', '*', '/'].includes(textContent)) {
+                    handleOperator(textContent);
+                } else if (textContent === '=') {
+                    handleOperator(null);
+                } else if (textContent === 'C') {
+                    clear();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
